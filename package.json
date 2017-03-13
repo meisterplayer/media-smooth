@@ -1,6 +1,6 @@
 {
   "name": "@npm-wearetriple/meister-plugin-smooth",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Smooth plugin for Meister",
   "main": "dist/Smooth.js",
   "scripts": {},
