@@ -1,2 +1,1 @@
-# media-smooth
-Smooth plugin for Meister
+Smooth plugin for Meister player
