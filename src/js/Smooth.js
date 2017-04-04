@@ -1,5 +1,3 @@
-// const MediaPlayer = window.MediaPlayer;
-
 // HASPlayer is not a module. We include it via ES6 imports and use the Global set MediaPlayer.
 import GlobalMediaPlayer from './lib/hasplayer'; //eslint-disable-line
 
