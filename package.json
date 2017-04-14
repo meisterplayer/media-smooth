@@ -1,6 +1,6 @@
 {
-  "name": "@npm-wearetriple/meister-plugin-smooth",
-  "version": "1.0.1",
+  "name": "meister-plugin-smooth",
+  "version": "5.0.0",
   "description": "Smooth plugin for Meister",
   "main": "dist/Smooth.js",
   "scripts": {},
@@ -10,6 +10,10 @@
     "plugin",
     "media"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meisterplayer/media-smooth.git"
+  },
   "author": "Triple",
   "license": "Apache-2.0",
   "devDependencies": {
