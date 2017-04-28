@@ -71,7 +71,12 @@ class Smooth extends Meister.MediaPlugin {
         });
     }
 
-    hasPlayerLoadHack() {
+    hasPlayerLoadHack(error) {
+        // Pre check if this is the error we wanna catch.
+        if (error.code === 'MSTR-0404' && this.meister.playerPlugin.mediaElement.currentSrc === `${location.protocol}//${location.host}/`) {
+            this.fake404Triggered = true;
+        }
+
         // Use a timeout so the eventHandler block for meister error is removed.
         setTimeout(() => {
             // HAS player sometimes uses the hostname as the video src, but resolves it on its own later.
@@ -91,6 +96,14 @@ class Smooth extends Meister.MediaPlugin {
 
         // Add potential error event override for bogus HAS player error.
         this.one('error', true, this.hasPlayerLoadHack.bind(this));
+        this.one('playerError', true, (event) => {
+            // Make sure we catch the false error
+            // When it does not match the critiria, retrigger the error so the user can still catch it.
+            if (event.mediaError.code !== event.mediaError.MEDIA_ERR_SRC_NOT_SUPPORTED && !this.fake404Triggered) {
+                this.meister.trigger('playerError', event);
+            }
+        });
+
 
         return new Promise((resolve) => {
             this.mediaPlayer = new MediaPlayer();
