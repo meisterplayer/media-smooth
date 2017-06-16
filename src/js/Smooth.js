@@ -124,6 +124,24 @@ class Smooth extends Meister.MediaPlugin {
         });
     }
 
+    get duration() {
+        if (!this.player) { return NaN; }
+
+        return this.player.duration;
+    }
+
+    get currentTime() {
+        if (!this.player) { return NaN; }
+
+        return this.player.currentTime;
+    }
+
+    set currentTime(time) {
+        if (!this.player) { return; }
+
+        this.player.currentTime = time;
+    }
+
     unload() {
         super.unload();
 
@@ -138,9 +156,6 @@ class Smooth extends Meister.MediaPlugin {
     }
 
     attachEvents() {
-        this.on('_playerTimeUpdate', this._onPlayerTimeUpdate.bind(this));
-        this.on('_playerSeek', this._onPlayerSeek.bind(this));
-        this.on('requestSeek', this.onRequestSeek.bind(this));
         this.on('requestBitrate', this.onRequestBitrate.bind(this));
 
         this.mediaPlayer.eventBus.addEventListener('manifestLoaded', this.onManifestLoaded.bind(this));
@@ -188,14 +203,14 @@ class Smooth extends Meister.MediaPlugin {
 
     _onPlayerTimeUpdate() {
         this.meister.trigger('playerTimeUpdate', {
-            currentTime: this.meister.currentTime,
-            duration: this.meister.duration,
+            currentTime: this.player.currentTime,
+            duration: this.player.duration,
         });
     }
 
     _onPlayerSeek() {
-        const currentTime = this.meister.currentTime;
-        const duration = this.meister.duration;
+        const currentTime = this.player.currentTime;
+        const duration = this.player.duration;
         const relativePosition = currentTime / duration;
 
         this.meister.trigger('playerSeek', {
@@ -209,18 +224,18 @@ class Smooth extends Meister.MediaPlugin {
         let targetTime;
 
         if (Number.isFinite(e.relativePosition)) {
-            targetTime = e.relativePosition * this.meister.duration;
+            targetTime = e.relativePosition * this.player.duration;
         } else if (Number.isFinite(e.timeOffset)) {
-            targetTime = this.meister.currentTime + e.timeOffset;
+            targetTime = this.player.currentTime + e.timeOffset;
         } else if (Number.isFinite(e.targetTime)) {
             targetTime = e.targetTime;
         }
 
         // Check whether we are allowed to seek forward.
-        if (!e.forcedStart && this.blockSeekForward && targetTime > this.meister.currentTime) { return; }
+        if (!e.forcedStart && this.blockSeekForward && targetTime > this.player.currentTime) { return; }
 
         if (Number.isFinite(targetTime)) {
-            this.meister.currentTime = targetTime;
+            this.player.currentTime = targetTime;
         }
     }
 
