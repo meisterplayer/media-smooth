@@ -64,7 +64,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -572,6 +572,10 @@ var _hasplayer = __webpack_require__(6);
 
 var _hasplayer2 = _interopRequireDefault(_hasplayer);
 
+var _package = __webpack_require__(7);
+
+var _package2 = _interopRequireDefault(_package);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -579,9 +583,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } // HASPlayer is not a module. We include it via ES6 imports and use the Global set MediaPlayer.
-
-
 //eslint-disable-line
+
 
 var MediaPlayer = window.MediaPlayer;
 
@@ -662,8 +665,13 @@ var Smooth = function (_Meister$MediaPlugin) {
         }
     }, {
         key: 'hasPlayerLoadHack',
-        value: function hasPlayerLoadHack() {
+        value: function hasPlayerLoadHack(error) {
             var _this4 = this;
+
+            // Pre check if this is the error we wanna catch.
+            if (error.code === 'MSTR-0404' && this.meister.playerPlugin.mediaElement.currentSrc === location.protocol + '//' + location.host + '/') {
+                this.fake404Triggered = true;
+            }
 
             // Use a timeout so the eventHandler block for meister error is removed.
             setTimeout(function () {
@@ -687,6 +695,13 @@ var Smooth = function (_Meister$MediaPlugin) {
 
             // Add potential error event override for bogus HAS player error.
             this.one('error', true, this.hasPlayerLoadHack.bind(this));
+            this.one('playerError', true, function (event) {
+                // Make sure we catch the false error
+                // When it does not match the critiria, retrigger the error so the user can still catch it.
+                if (event.mediaError.code !== event.mediaError.MEDIA_ERR_SRC_NOT_SUPPORTED && !_this5.fake404Triggered) {
+                    _this5.meister.trigger('playerError', event);
+                }
+            });
 
             return new Promise(function (resolve) {
                 _this5.mediaPlayer = new MediaPlayer();
@@ -837,6 +852,11 @@ var Smooth = function (_Meister$MediaPlugin) {
         key: 'pluginName',
         get: function get() {
             return 'Smooth';
+        }
+    }, {
+        key: 'pluginVersion',
+        get: function get() {
+            return _package2.default.version;
         }
     }]);
 
@@ -8575,6 +8595,37 @@ return _MediaPlayer;});
 
 /***/ }),
 /* 7 */
+/***/ (function(module, exports) {
+
+module.exports = {
+	"name": "@meisterplayer/plugin-smooth",
+	"version": "5.1.0",
+	"description": "Smooth plugin for Meister",
+	"main": "dist/Smooth.js",
+	"scripts": {},
+	"keywords": [
+		"meister",
+		"video",
+		"plugin",
+		"media"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/meisterplayer/media-smooth.git"
+	},
+	"author": "Triple",
+	"license": "Apache-2.0",
+	"devDependencies": {
+		"meister-gulp-webpack-tasks": "^1.0.6",
+		"meister-js-dev": "^3.1.0",
+		"babel-preset-es2015": "^6.24.0",
+		"babel-preset-es2017": "^6.22.0",
+		"gulp": "^3.9.1"
+	}
+};
+
+/***/ }),
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(1);
