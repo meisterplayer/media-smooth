@@ -1,5 +1,6 @@
 // HASPlayer is not a module. We include it via ES6 imports and use the Global set MediaPlayer.
 import GlobalMediaPlayer from './lib/hasplayer'; //eslint-disable-line
+import packageJson from '../../package.json';
 
 const MediaPlayer = window.MediaPlayer;
 
@@ -14,6 +15,10 @@ class Smooth extends Meister.MediaPlugin {
 
     static get pluginName() {
         return 'Smooth';
+    }
+
+    static get pluginVersion() {
+        return packageJson.version;
     }
 
     isItemSupported(item) {
