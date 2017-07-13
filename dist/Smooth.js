@@ -7,9 +7,9 @@ module.exports =
 /******/ 	function __webpack_require__(moduleId) {
 /******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
+/******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-/******/ 		}
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
@@ -733,9 +733,6 @@ var Smooth = function (_Meister$MediaPlugin) {
     }, {
         key: 'attachEvents',
         value: function attachEvents() {
-            this.on('_playerTimeUpdate', this._onPlayerTimeUpdate.bind(this));
-            this.on('_playerSeek', this._onPlayerSeek.bind(this));
-            this.on('requestSeek', this.onRequestSeek.bind(this));
             this.on('requestBitrate', this.onRequestBitrate.bind(this));
 
             this.mediaPlayer.eventBus.addEventListener('manifestLoaded', this.onManifestLoaded.bind(this));
@@ -785,15 +782,15 @@ var Smooth = function (_Meister$MediaPlugin) {
         key: '_onPlayerTimeUpdate',
         value: function _onPlayerTimeUpdate() {
             this.meister.trigger('playerTimeUpdate', {
-                currentTime: this.meister.currentTime,
-                duration: this.meister.duration
+                currentTime: this.player.currentTime,
+                duration: this.player.duration
             });
         }
     }, {
         key: '_onPlayerSeek',
         value: function _onPlayerSeek() {
-            var currentTime = this.meister.currentTime;
-            var duration = this.meister.duration;
+            var currentTime = this.player.currentTime;
+            var duration = this.player.duration;
             var relativePosition = currentTime / duration;
 
             this.meister.trigger('playerSeek', {
@@ -808,20 +805,20 @@ var Smooth = function (_Meister$MediaPlugin) {
             var targetTime = void 0;
 
             if (Number.isFinite(e.relativePosition)) {
-                targetTime = e.relativePosition * this.meister.duration;
+                targetTime = e.relativePosition * this.player.duration;
             } else if (Number.isFinite(e.timeOffset)) {
-                targetTime = this.meister.currentTime + e.timeOffset;
+                targetTime = this.player.currentTime + e.timeOffset;
             } else if (Number.isFinite(e.targetTime)) {
                 targetTime = e.targetTime;
             }
 
             // Check whether we are allowed to seek forward.
-            if (!e.forcedStart && this.blockSeekForward && targetTime > this.meister.currentTime) {
+            if (!e.forcedStart && this.blockSeekForward && targetTime > this.player.currentTime) {
                 return;
             }
 
             if (Number.isFinite(targetTime)) {
-                this.meister.currentTime = targetTime;
+                this.player.currentTime = targetTime;
             }
         }
     }, {
@@ -847,6 +844,31 @@ var Smooth = function (_Meister$MediaPlugin) {
                 newBitrate: newBitrate,
                 newBitrateIndex: e.bitrateIndex
             });
+        }
+    }, {
+        key: 'duration',
+        get: function get() {
+            if (!this.player) {
+                return NaN;
+            }
+
+            return this.player.duration;
+        }
+    }, {
+        key: 'currentTime',
+        get: function get() {
+            if (!this.player) {
+                return NaN;
+            }
+
+            return this.player.currentTime;
+        },
+        set: function set(time) {
+            if (!this.player) {
+                return;
+            }
+
+            this.player.currentTime = time;
         }
     }], [{
         key: 'pluginName',
@@ -8599,7 +8621,7 @@ return _MediaPlayer;});
 
 module.exports = {
 	"name": "@meisterplayer/plugin-smooth",
-	"version": "5.1.0",
+	"version": "5.2.0",
 	"description": "Smooth plugin for Meister",
 	"main": "dist/Smooth.js",
 	"scripts": {},
@@ -8621,6 +8643,9 @@ module.exports = {
 		"babel-preset-es2015": "^6.24.0",
 		"babel-preset-es2017": "^6.22.0",
 		"gulp": "^3.9.1"
+	},
+	"peerDependencies": {
+		"@meisterplayer/meisterplayer": ">= 5.1.0"
 	}
 };
 
