@@ -24,14 +24,14 @@ class Smooth extends Meister.MediaPlugin {
     isItemSupported(item) {
         return new Promise((resolve) => {
             if (item.type !== 'smooth' && item.type !== 'mss') {
-                return resolve({
+                resolve({
                     supported: false,
                     errorCode: Meister.ErrorCodes.WRONG_TYPE,
                 });
             }
 
             if (!window.MediaSource) {
-                return resolve({
+                resolve({
                     supported: false,
                     errorCode: Meister.ErrorCodes.NOT_SUPPORTED,
                 });
@@ -49,7 +49,7 @@ class Smooth extends Meister.MediaPlugin {
                         }
                     });
 
-                    return resolve({
+                    resolve({
                         supported,
                         errorCode: supported ? null : Meister.ErrorCodes.NO_DRM,
                     });
@@ -57,7 +57,7 @@ class Smooth extends Meister.MediaPlugin {
 
                 this.meister.trigger('requestDrmKeySystemSupport', {});
             } else {
-                return resolve({
+                resolve({
                     supported: true,
                 });
             }
