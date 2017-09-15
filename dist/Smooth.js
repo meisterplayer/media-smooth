@@ -705,6 +705,7 @@ var Smooth = function (_Meister$MediaPlugin) {
 
             return new Promise(function (resolve) {
                 _this5.mediaPlayer = new MediaPlayer();
+                _this5.mediaPlayer.setAutoPlay(false);
                 _this5.mediaPlayer.init(_this5.meister.playerPlugin.mediaElement);
                 _this5.mediaPlayer.load({
                     url: item.src
@@ -8621,7 +8622,7 @@ return _MediaPlayer;});
 
 module.exports = {
 	"name": "@meisterplayer/plugin-smooth",
-	"version": "5.2.0",
+	"version": "5.2.1",
 	"description": "Smooth plugin for Meister",
 	"main": "dist/Smooth.js",
 	"scripts": {},

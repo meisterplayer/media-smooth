@@ -1,3 +1,13 @@
+<a name="5.2.1"></a>
+## [5.2.1](https://github.com/meisterplayer/media-smooth/compare/v5.2.0...v5.2.1) (2017-09-15)
+
+
+### Bug Fixes
+
+* **playback:** Autoplay is now disabled by default ([4653e6c](https://github.com/meisterplayer/media-smooth/commit/4653e6c))
+
+
+
 <a name="5.2.0"></a>
 # [5.2.0](https://github.com/meisterplayer/media-smooth/compare/v5.1.0...v5.2.0) (2017-07-13)
 
