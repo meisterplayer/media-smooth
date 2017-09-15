@@ -109,9 +109,9 @@ class Smooth extends Meister.MediaPlugin {
             }
         });
 
-
         return new Promise((resolve) => {
             this.mediaPlayer = new MediaPlayer();
+            this.mediaPlayer.setAutoPlay(false);
             this.mediaPlayer.init(this.meister.playerPlugin.mediaElement);
             this.mediaPlayer.load({
                 url: item.src,
