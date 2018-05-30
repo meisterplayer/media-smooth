@@ -111,13 +111,22 @@ class Smooth extends Meister.MediaPlugin {
 
         return new Promise((resolve) => {
             this.mediaPlayer = new MediaPlayer();
-            this.mediaPlayer.setAutoPlay(false);
+            // this.mediaPlayer.setAutoPlay(false);
             this.mediaPlayer.init(this.meister.playerPlugin.mediaElement);
             this.mediaPlayer.load({
                 url: item.src,
             });
 
             // this.mediaPlayer.getDebug().setLevel(4);
+            // Soon smooth will be used in dash..
+            // For now we have to build these ugly hacks
+            this.meister.one('playerPlay', () => {
+                this.mediaPlayer.pause();
+                this.meister.playerPlugin.mediaElement.currentTime += 0.01;
+                this.mediaPlayer.play();
+            });
+
+            this.one('requestPlay', () => this.mediaPlayer.play());
 
             this.attachEvents();
             resolve();
@@ -193,6 +202,7 @@ class Smooth extends Meister.MediaPlugin {
         this.meister.trigger('itemTimeInfo', {
             isLive: this.isLive,
             hasDVR: false,
+            duration: e.data.Period.duration,
         });
 
         this.meister.trigger('itemBitrates', {
