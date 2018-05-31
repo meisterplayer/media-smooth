@@ -1,3 +1,17 @@
+# Change Log
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+<a name="5.2.2"></a>
+## [5.2.2](https://github.com/meisterplayer/media-smooth/compare/v5.2.1...v5.2.2) (2018-05-31)
+
+
+### Bug Fixes
+
+* **playback:** Fix issue where smooth wasnt always playing in Edge ([da07143](https://github.com/meisterplayer/media-smooth/commit/da07143))
+
+
+
 <a name="5.2.1"></a>
 ## [5.2.1](https://github.com/meisterplayer/media-smooth/compare/v5.2.0...v5.2.1) (2017-09-15)
 
@@ -30,6 +44,3 @@
 ### Features
 
 * **pluginVersion:** Add pluginVersion to class ([318fae0](https://github.com/meisterplayer/media-smooth/commit/318fae0))
-
-
-
