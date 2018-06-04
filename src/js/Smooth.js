@@ -65,6 +65,8 @@ class Smooth extends Meister.MediaPlugin {
     }
 
     process(item) {
+        this.one('playerCanPlay', this.playerCanPlay.bind(this));
+
         return new Promise((resolve, reject) => {
             this.player = this.meister.getPlayerByType('html5', item);
 
@@ -246,6 +248,20 @@ class Smooth extends Meister.MediaPlugin {
 
         if (Number.isFinite(targetTime)) {
             this.player.currentTime = targetTime;
+        }
+    }
+
+    // This overwrites the default startPosition handeling
+    // so we can use our own custom implementation (playerCanPlay)
+    playerLoadedMetadata() {}
+
+    playerCanPlay() {
+        // when startPosition is within the duration of the current video
+        if (this.startPosition > 0 && this.player.duration > this.startPosition) {
+            if (this.startPositionCompleted) return;
+            this.startPositionCompleted = true;
+
+            this.mediaPlayer.seek(this.startPosition);
         }
     }
 
