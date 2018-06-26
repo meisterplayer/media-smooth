@@ -255,13 +255,20 @@ class Smooth extends Meister.MediaPlugin {
     // so we can use our own custom implementation (playerCanPlay)
     playerLoadedMetadata() {}
 
-    playerCanPlay() {
+    async playerCanPlay() {
         // when startPosition is within the duration of the current video
         if (this.startPosition > 0 && this.player.duration > this.startPosition) {
             if (this.startPositionCompleted) return;
             this.startPositionCompleted = true;
 
             this.mediaPlayer.seek(this.startPosition);
+
+            // It seems like IE has a weird quirk where it needs to play/pause
+            // in order to play after a seek..
+            if (this.meister.browser.isIE) {
+                this.meister.pause();
+                this.meister.play();
+            }
         }
     }
 
