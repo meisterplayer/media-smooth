@@ -169,7 +169,23 @@ class Smooth extends Meister.MediaPlugin {
     attachEvents() {
         this.on('requestBitrate', this.onRequestBitrate.bind(this));
 
+        this.mediaPlayer.addEventListener('play_bitrate', this.onQualityChanged.bind(this));
         this.mediaPlayer.eventBus.addEventListener('manifestLoaded', this.onManifestLoaded.bind(this));
+    }
+
+    onQualityChanged(e) {
+        const { detail } = e;
+
+        if (detail.type !== 'video') return;
+
+        const bitrates = this.mediaPlayer.getVideoBitrates();
+        const newBitrate = detail.bitrate;
+        const newBitrateIndex = bitrates.findIndex(bitrate => bitrate === newBitrate);
+
+        this.meister.trigger('playerAutoSwitchBitrate', {
+            newBitrate,
+            newBitrateIndex,
+        });
     }
 
     onManifestLoaded(e) {
