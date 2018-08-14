@@ -578,6 +578,8 @@ var _package2 = _interopRequireDefault(_package);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -609,14 +611,14 @@ var Smooth = function (_Meister$MediaPlugin) {
 
             return new Promise(function (resolve) {
                 if (item.type !== 'smooth' && item.type !== 'mss') {
-                    return resolve({
+                    resolve({
                         supported: false,
                         errorCode: Meister.ErrorCodes.WRONG_TYPE
                     });
                 }
 
                 if (!window.MediaSource) {
-                    return resolve({
+                    resolve({
                         supported: false,
                         errorCode: Meister.ErrorCodes.NOT_SUPPORTED
                     });
@@ -634,7 +636,7 @@ var Smooth = function (_Meister$MediaPlugin) {
                             }
                         });
 
-                        return resolve({
+                        resolve({
                             supported: supported,
                             errorCode: supported ? null : Meister.ErrorCodes.NO_DRM
                         });
@@ -642,7 +644,7 @@ var Smooth = function (_Meister$MediaPlugin) {
 
                     _this2.meister.trigger('requestDrmKeySystemSupport', {});
                 } else {
-                    return resolve({
+                    resolve({
                         supported: true
                     });
                 }
@@ -652,6 +654,8 @@ var Smooth = function (_Meister$MediaPlugin) {
         key: 'process',
         value: function process(item) {
             var _this3 = this;
+
+            this.one('playerCanPlay', this.playerCanPlay.bind(this));
 
             return new Promise(function (resolve, reject) {
                 _this3.player = _this3.meister.getPlayerByType('html5', item);
@@ -705,13 +709,24 @@ var Smooth = function (_Meister$MediaPlugin) {
 
             return new Promise(function (resolve) {
                 _this5.mediaPlayer = new MediaPlayer();
-                _this5.mediaPlayer.setAutoPlay(false);
+                // this.mediaPlayer.setAutoPlay(false);
                 _this5.mediaPlayer.init(_this5.meister.playerPlugin.mediaElement);
                 _this5.mediaPlayer.load({
                     url: item.src
                 });
 
                 // this.mediaPlayer.getDebug().setLevel(4);
+                // Soon smooth will be used in dash..
+                // For now we have to build these ugly hacks
+                _this5.meister.one('playerPlay', function () {
+                    _this5.mediaPlayer.pause();
+                    _this5.meister.playerPlugin.mediaElement.currentTime += 0.01;
+                    _this5.mediaPlayer.play();
+                });
+
+                _this5.one('requestPlay', function () {
+                    return _this5.mediaPlayer.play();
+                });
 
                 _this5.attachEvents();
                 resolve();
@@ -736,7 +751,27 @@ var Smooth = function (_Meister$MediaPlugin) {
         value: function attachEvents() {
             this.on('requestBitrate', this.onRequestBitrate.bind(this));
 
+            this.mediaPlayer.addEventListener('play_bitrate', this.onQualityChanged.bind(this));
             this.mediaPlayer.eventBus.addEventListener('manifestLoaded', this.onManifestLoaded.bind(this));
+        }
+    }, {
+        key: 'onQualityChanged',
+        value: function onQualityChanged(e) {
+            var detail = e.detail;
+
+
+            if (detail.type !== 'video') return;
+
+            var bitrates = this.mediaPlayer.getVideoBitrates();
+            var newBitrate = detail.bitrate;
+            var newBitrateIndex = bitrates.findIndex(function (bitrate) {
+                return bitrate === newBitrate;
+            });
+
+            this.meister.trigger('playerAutoSwitchBitrate', {
+                newBitrate: newBitrate,
+                newBitrateIndex: newBitrateIndex
+            });
         }
     }, {
         key: 'onManifestLoaded',
@@ -771,7 +806,8 @@ var Smooth = function (_Meister$MediaPlugin) {
 
             this.meister.trigger('itemTimeInfo', {
                 isLive: this.isLive,
-                hasDVR: false
+                hasDVR: false,
+                duration: e.data.Period.duration
             });
 
             this.meister.trigger('itemBitrates', {
@@ -822,6 +858,59 @@ var Smooth = function (_Meister$MediaPlugin) {
                 this.player.currentTime = targetTime;
             }
         }
+
+        // This overwrites the default startPosition handeling
+        // so we can use our own custom implementation (playerCanPlay)
+
+    }, {
+        key: 'playerLoadedMetadata',
+        value: function playerLoadedMetadata() {}
+    }, {
+        key: 'playerCanPlay',
+        value: function () {
+            var _ref = _asyncToGenerator(regeneratorRuntime.mark(function _callee() {
+                return regeneratorRuntime.wrap(function _callee$(_context) {
+                    while (1) {
+                        switch (_context.prev = _context.next) {
+                            case 0:
+                                if (!(this.startPosition > 0 && this.player.duration > this.startPosition)) {
+                                    _context.next = 6;
+                                    break;
+                                }
+
+                                if (!this.startPositionCompleted) {
+                                    _context.next = 3;
+                                    break;
+                                }
+
+                                return _context.abrupt('return');
+
+                            case 3:
+                                this.startPositionCompleted = true;
+
+                                this.mediaPlayer.seek(this.startPosition);
+
+                                // It seems like IE has a weird quirk where it needs to play/pause
+                                // in order to play after a seek..
+                                if (this.meister.browser.isIE) {
+                                    this.meister.pause();
+                                    this.meister.play();
+                                }
+
+                            case 6:
+                            case 'end':
+                                return _context.stop();
+                        }
+                    }
+                }, _callee, this);
+            }));
+
+            function playerCanPlay() {
+                return _ref.apply(this, arguments);
+            }
+
+            return playerCanPlay;
+        }()
     }, {
         key: 'onRequestBitrate',
         value: function onRequestBitrate(e) {
@@ -8622,10 +8711,9 @@ return _MediaPlayer;});
 
 module.exports = {
 	"name": "@meisterplayer/plugin-smooth",
-	"version": "5.2.1",
+	"version": "5.3.0",
 	"description": "Smooth plugin for Meister",
 	"main": "dist/Smooth.js",
-	"scripts": {},
 	"keywords": [
 		"meister",
 		"video",
@@ -8636,14 +8724,23 @@ module.exports = {
 		"type": "git",
 		"url": "https://github.com/meisterplayer/media-smooth.git"
 	},
+	"scripts": {
+		"lint": "eslint ./src/js",
+		"test": "jest",
+		"test:coverage": "jest --coverage",
+		"build": "gulp build",
+		"dist": "gulp build:min && gulp build:dist"
+	},
 	"author": "Triple",
 	"license": "Apache-2.0",
 	"devDependencies": {
-		"meister-gulp-webpack-tasks": "^1.0.6",
-		"meister-js-dev": "^3.1.0",
+		"@meisterplayer/meister-mock": "^1.0.0",
 		"babel-preset-es2015": "^6.24.0",
 		"babel-preset-es2017": "^6.22.0",
-		"gulp": "^3.9.1"
+		"gulp": "^3.9.1",
+		"jest": "^20.0.4",
+		"meister-gulp-webpack-tasks": "^1.0.6",
+		"meister-js-dev": "^3.1.0"
 	},
 	"peerDependencies": {
 		"@meisterplayer/meisterplayer": ">= 5.1.0"
