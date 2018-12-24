@@ -1,5 +1,6 @@
 // HASPlayer is not a module. We include it via ES6 imports and use the Global set MediaPlayer.
 import GlobalMediaPlayer from './lib/hasplayer'; //eslint-disable-line
+import localization from './localization';
 import packageJson from '../../package.json';
 
 const MediaPlayer = window.MediaPlayer;
@@ -11,6 +12,8 @@ class Smooth extends Meister.MediaPlugin {
         this.mediaPlayer = null;
         this.isLive = false;
         this.bitrates = [];
+
+        meister.Localization.setFromFormattedObject(localization);
     }
 
     static get pluginName() {
@@ -91,7 +94,7 @@ class Smooth extends Meister.MediaPlugin {
                 console.info('Ignoring error: strange HAS player behaviour.');
             } else {
                 // Throw error anyway.
-                this.meister.error('Media not found', Meister.ErrorCodes.NO_MEDIA_FOUND);
+                this.meister.trigger('error', error);
             }
             // Rearm the override.
             this.one('error', true, this.hasPlayerLoadHack.bind(this));
@@ -169,8 +172,23 @@ class Smooth extends Meister.MediaPlugin {
     attachEvents() {
         this.on('requestBitrate', this.onRequestBitrate.bind(this));
 
+        this.mediaPlayer.addEventListener('error', this.handleErrorEvent.bind(this));
         this.mediaPlayer.addEventListener('play_bitrate', this.onQualityChanged.bind(this));
         this.mediaPlayer.eventBus.addEventListener('manifestLoaded', this.onManifestLoaded.bind(this));
+    }
+
+    handleErrorEvent(e) {
+        switch (e.data.code) {
+        case 'DOWNLOAD_ERR_MANIFEST':
+            this.meister.error(this.meister.Localization.get('COULD_NOT_DOWNLOAD_MANIFEST'), 'SMTH-0001');
+            break;
+        case 'DOWNLOAD_ERR_CONTENT':
+            this.meister.error(this.meister.Localization.get('COULD_NOT_DOWNLOAD_FRAGMENTS'), 'SMTH-0002');
+            break;
+        default:
+            this.meister.error(this.meister.Localization.get('GENERIC_ERROR'), 'SMTH-0000');
+            break;
+        }
     }
 
     onQualityChanged(e) {
