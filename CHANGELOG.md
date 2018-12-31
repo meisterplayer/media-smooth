@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.3.1"></a>
+## [5.3.1](https://github.com/meisterplayer/media-smooth/compare/v5.3.0...v5.3.1) (2018-12-31)
+
+
+### Bug Fixes
+
+* **errors:** Display error message on manifest or fragment load failure ([c01d6f7](https://github.com/meisterplayer/media-smooth/commit/c01d6f7))
+
+
+
 <a name="5.3.0"></a>
 # [5.3.0](https://github.com/meisterplayer/media-smooth/compare/v5.2.4...v5.3.0) (2018-08-14)
 
